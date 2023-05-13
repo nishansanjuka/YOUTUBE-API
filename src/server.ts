@@ -23,7 +23,6 @@ async function Verify(req: any):Promise<boolean>{
 const Download =  async (videoId:string) => {
     return await new Promise(async(resolve:any,reject:any) => {
         const chunks = [];
-        const videoTitle = videoId;
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
         const stream = ytdl(videoUrl, { filter: 'audioonly' })
         stream.on('data', async (chunk) => {

@@ -33,7 +33,6 @@ function Verify(req) {
 const Download = (videoId) => __awaiter(void 0, void 0, void 0, function* () {
     return yield new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         const chunks = [];
-        const videoTitle = videoId;
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
         const stream = (0, ytdl_core_1.default)(videoUrl, { filter: 'audioonly' });
         stream.on('data', (chunk) => __awaiter(void 0, void 0, void 0, function* () {
@@ -62,7 +61,7 @@ app.get("/get-mp3", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 if (videoId) {
                     const mp3_buffer = yield Download(videoId.toString());
                     console.log(mp3_buffer);
-                    res.json("yes...");
+                    res.status(200).send(mp3_buffer);
                 }
                 else {
                     res.status(406).json("didn't recognice as a youtube url!");
