@@ -57,7 +57,7 @@ app.get("/get-mp3" ,async(req:any,res:any) => {
                 if(videoId) {
                     const mp3_buffer = await Download(videoId.toString());
                     console.log(mp3_buffer);
-                    res.json("yes...");
+                    res.status(200).send(mp3_buffer);
                 }
                 else
                 {
