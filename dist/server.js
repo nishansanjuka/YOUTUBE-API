@@ -61,7 +61,7 @@ app.get("/get-mp3", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 if (videoId) {
                     const mp3_buffer = yield Download(videoId.toString());
                     console.log(mp3_buffer);
-                    res.status(200).json(mp3_buffer);
+                    res.status(200).send(mp3_buffer);
                 }
                 else {
                     res.status(406).json("didn't recognice as a youtube url!");
@@ -77,7 +77,8 @@ app.get("/get-mp3", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
     }
     else {
-        res.status(401).json("Unauthorized!");
+        console.log("hey Unauthorized!!! and acces token is ", process.env.ACCESS_TOKEN);
+        res.status(401).json({ msg: "Unauthorized!", at: process.env.ACCESS_TOKEN });
     }
 }));
 app.listen(5252, () => {

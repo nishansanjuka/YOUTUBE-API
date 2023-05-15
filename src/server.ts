@@ -56,7 +56,7 @@ app.get("/get-mp3" ,async(req:any,res:any) => {
                 if(videoId) {
                     const mp3_buffer = await Download(videoId.toString());
                     console.log(mp3_buffer);
-                    res.status(200).json(mp3_buffer);
+                    res.status(200).send(mp3_buffer);
                 }
                 else
                 {
@@ -76,7 +76,8 @@ app.get("/get-mp3" ,async(req:any,res:any) => {
     }
     else
     {
-        res.status(401).json("Unauthorized!")
+        console.log("hey Unauthorized!!! and acces token is " , process.env.ACCESS_TOKEN)
+        res.status(401).json({msg:"Unauthorized!" , at:process.env.ACCESS_TOKEN})
     }
 })
 
