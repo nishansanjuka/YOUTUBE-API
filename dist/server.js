@@ -30,27 +30,6 @@ function Verify(req) {
         }
     });
 }
-const Download = (videoId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-        const chunks = [];
-        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        const stream = (0, ytdl_core_1.default)(videoUrl, { filter: 'audioonly' });
-        stream.on('data', (chunk) => __awaiter(void 0, void 0, void 0, function* () {
-            chunks.push(chunk);
-        }));
-        stream.on('end', () => {
-            var buffer = Buffer.concat(chunks);
-            resolve(buffer);
-            buffer = null;
-        });
-        stream.on('finish', () => {
-            console.log("Done Downloaded!");
-        });
-        stream.on('error', (error) => {
-            reject(error);
-        });
-    }));
-});
 app.get("/get-mp3", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const is_verifyed = yield Verify(req);
     if (is_verifyed) {
@@ -59,9 +38,24 @@ app.get("/get-mp3", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             try {
                 const videoId = url_1.default.parse(youtube_url, true).query.v;
                 if (videoId) {
-                    const mp3_buffer = yield Download(videoId.toString());
-                    console.log(mp3_buffer);
-                    res.status(200).send(mp3_buffer);
+                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                    const stream = (0, ytdl_core_1.default)(videoUrl, { filter: 'audioonly' });
+                    const getContentLength = new Promise((resolve, reject) => {
+                        stream.on('response', (response) => {
+                            const contentLength = response.headers['content-length'];
+                            resolve(contentLength);
+                        });
+                    });
+                    const contentLength = yield getContentLength;
+                    res.setHeader('Content-Length', contentLength);
+                    res.setHeader('Content-Type', 'aduio/webm');
+                    stream.pipe(res);
+                    stream.on('finish', () => {
+                        console.log("Done Downloaded!");
+                    });
+                    stream.on('error', (error) => {
+                        console.log({ error });
+                    });
                 }
                 else {
                     res.status(406).json("didn't recognice as a youtube url!");

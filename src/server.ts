@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import urlquery from 'url';
 import ytdl from 'ytdl-core';
+import {Readable} from 'stream';
 
 const app = express();
 
@@ -20,30 +21,6 @@ async function Verify(req: any):Promise<boolean>{
     }
 }
 
-const Download =  async (videoId:string) => {
-    return await new Promise(async(resolve:any,reject:any) => {
-        const chunks = [];
-        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        const stream = ytdl(videoUrl, { filter: 'audioonly' })
-        stream.on('data', async (chunk) => {
-            chunks.push(chunk);
-        });
-        
-        stream.on('end', () => {
-            var buffer = Buffer.concat(chunks);
-            resolve(buffer)
-            buffer = null;
-        });
-        stream.on('finish', () => {
-            console.log("Done Downloaded!");
-        });
-        stream.on('error', (error) => {
-            reject(error)
-        });
-    })
-}
-
-
 app.get("/get-mp3" ,async(req:any,res:any) => {
     const is_verifyed:boolean = await Verify(req);
     if(is_verifyed){
@@ -54,9 +31,24 @@ app.get("/get-mp3" ,async(req:any,res:any) => {
             {
                 const videoId = urlquery.parse(youtube_url , true).query.v;
                 if(videoId) {
-                    const mp3_buffer = await Download(videoId.toString());
-                    console.log(mp3_buffer);
-                    res.status(200).send(mp3_buffer);
+                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                    const stream = ytdl(videoUrl, { filter: 'audioonly' });
+                    const getContentLength = new Promise((resolve:any,reject:any) => {
+                        stream.on('response', (response) => {
+                            const contentLength = response.headers['content-length'];
+                            resolve(contentLength as number);
+                          });
+                    })
+                    const contentLength = await getContentLength;
+                    res.setHeader('Content-Length', contentLength);
+                    res.setHeader('Content-Type', 'aduio/webm');
+                    stream.pipe(res);
+                    stream.on('finish', () => {
+                        console.log("Done Downloaded!");
+                    });
+                    stream.on('error', (error) => {
+                        console.log({error})
+                    });
                 }
                 else
                 {
